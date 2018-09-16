@@ -1,7 +1,9 @@
 package com.zaid.green.ocrtextrecognition;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,12 +11,16 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+
+import org.opencv.android.OpenCVLoader;
 
 import java.io.IOException;
 
@@ -23,13 +29,20 @@ public class MainActivity extends AppCompatActivity {
     private CameraSource mCameraSource;
 
     // Views
-    private TextView mTextView;
     private SurfaceView mCameraView;
-
+    private FloatingActionButton floatingActionButton;
     // Constants
     final int REQUEST_PERMISSION_ID = 200; // code for camera permission
 
+    // Variables
+    String selectedText;
 
+    // Just to check if openCV library work.
+    static {
+        if(!OpenCVLoader.initDebug()) {
+            Log.i("Tag" , "Not loaded");
+        } else Log.i("Tag" , "Loaded");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,11 +50,33 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initViews();
         startCameraSource();
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        selectedText = "";
     }
 
     private void initViews() {
-        mTextView = findViewById(R.id.text_view);
+      //  mTextView = findViewById(R.id.text_view);
         mCameraView = findViewById(R.id.surfaceView);
+        floatingActionButton = findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(v.getId() == floatingActionButton.getId()) {
+                    if(selectedText != null && selectedText.length() > 0)
+                    {
+                        changeActivity();
+                    }
+                    else {
+                        Toast.makeText(MainActivity.this, "No text is selected", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
     }
 
     private void startCameraSource() {
@@ -82,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                 }
 
                 @Override
@@ -96,13 +132,11 @@ public class MainActivity extends AppCompatActivity {
                     mCameraSource.stop();
                 }
             });
-
-            //Set the TextRecognizer's Processor.
+            // Set the TextRecognizer's Processor.
             textRecognizer.setProcessor(new Detector.Processor<TextBlock>() {
                 @Override
                 public void release() {
                 }
-
                 /**
                  * Detect all the text from camera using TextBlock and the values into a stringBuilder
                  * which will then be set to the textView.
@@ -111,22 +145,22 @@ public class MainActivity extends AppCompatActivity {
                 public void receiveDetections(Detector.Detections<TextBlock> detections) {
                     final SparseArray<TextBlock> items = detections.getDetectedItems();
                     if (items.size() != 0 ){
-
-                        mTextView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                StringBuilder stringBuilder = new StringBuilder();
-                                for(int i=0;i<items.size();i++){
-                                    TextBlock item = items.valueAt(i);
-                                    stringBuilder.append(item.getValue());
-                                    stringBuilder.append("\n");
-                                }
-                                mTextView.setText(stringBuilder.toString());
-                            }
-                        });
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for(int i=0;i<items.size();i++){
+                            TextBlock item = items.valueAt(i);
+                            stringBuilder.append(item.getValue());
+                            stringBuilder.append("\n");
+                        }
+                        selectedText = stringBuilder.toString();
                     }
                 }
             });
         }
+    }
+
+    private void changeActivity() {
+        Intent intent = new Intent(this, TextEditorActivity.class);
+        intent.putExtra("text", selectedText);
+        startActivity(intent);
     }
 }
