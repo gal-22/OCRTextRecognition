@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">OCR Text Recognition</string>
+    <string name="chooser_title">Use with</string>
 </resources>

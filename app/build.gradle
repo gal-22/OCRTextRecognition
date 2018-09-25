@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
     buildTypes {
         release {
@@ -16,7 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
+
+
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -30,4 +37,10 @@ dependencies {
     implementation 'com.github.irshulx:laser-native-editor:2.3.1'
     implementation 'com.google.android.gms:play-services-vision:15.0.2'
     implementation project(':openCVLibrary343')
+    implementation project(':scanlibrary')
+    implementation 'com.soundcloud.android:android-crop:1.0.1@aar'
+    //noinspection GradleDynamicVersion
+    implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.+'
+    //implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.0'
+
 }
